@@ -92,6 +92,16 @@ def sample(
     else:
         raise ValueError
 
+
+
+    nf4_config = BitsAndBytesConfig(
+       load_in_4bit=True,
+       bnb_4bit_quant_type="nf4",
+       bnb_4bit_use_double_quant=True,
+       bnb_4bit_compute_dtype=torch.bfloat16
+    )
+
+    
     for input_img_path in all_img_paths:
         with Image.open(input_img_path) as image:
             if image.mode == "RGBA":
@@ -137,7 +147,7 @@ def sample(
         value_dict["cond_frames"] = image + cond_aug * torch.randn_like(image)
         value_dict["cond_aug"] = cond_aug
 
-        with torch.no_grad():
+        with torch.inference_mode():
             with torch.autocast(device):
                 batch, batch_uc = get_batch(
                     get_unique_embedder_keys_from_conditioner(model.conditioner),
